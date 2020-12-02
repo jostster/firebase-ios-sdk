@@ -40,7 +40,6 @@
 
 #import "Crashlytics/Crashlytics/Components/FIRCLSApplication.h"
 #import "Crashlytics/Crashlytics/Components/FIRCLSUserLogging.h"
-#import "Crashlytics/Crashlytics/Controllers/FIRCLSNetworkClient.h"
 #import "Crashlytics/Crashlytics/Controllers/FIRCLSReportUploader.h"
 #import "Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionArbiter.h"
 #import "Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionToken.h"
@@ -51,7 +50,6 @@
 #import "Crashlytics/Crashlytics/Models/FIRCLSInternalReport.h"
 #import "Crashlytics/Crashlytics/Models/FIRCLSSettings.h"
 #import "Crashlytics/Crashlytics/Models/FIRCLSSymbolResolver.h"
-#import "Crashlytics/Crashlytics/Operations/Reports/FIRCLSPackageReportOperation.h"
 #import "Crashlytics/Crashlytics/Operations/Reports/FIRCLSProcessReportOperation.h"
 
 #include "Crashlytics/Crashlytics/Components/FIRCLSGlobals.h"
@@ -453,8 +451,7 @@ static void (^reportSentCallback)(void);
     // SendUnsentReports again, so don't repeat the settings fetch
     static dispatch_once_t settingsFetchOnceToken;
     dispatch_once(&settingsFetchOnceToken, ^{
-      [self.settingsManager beginSettingsWithGoogleAppId:self.googleAppID
-                                                   token:token];
+      [self.settingsManager beginSettingsWithGoogleAppId:self.googleAppID token:token];
     });
   }
 }
@@ -668,8 +665,7 @@ static void (^reportSentCallback)(void);
   // trying to re-submit a prepared file that is already in flight.
   [self.networkClient attemptToReconnectBackgroundSessionWithCompletionBlock:^{
     [self.operationQueue addOperationWithBlock:^{
-      [self uploadPreexistingFiles:preparedPaths
-                         withToken:token];
+      [self uploadPreexistingFiles:preparedPaths withToken:token];
     }];
   }];
 }

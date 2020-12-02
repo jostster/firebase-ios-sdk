@@ -15,7 +15,6 @@
 #import "Interop/Analytics/Public/FIRAnalyticsInterop.h"
 
 #import "Crashlytics/Crashlytics/Components/FIRCLSApplication.h"
-#import "Crashlytics/Crashlytics/Controllers/FIRCLSNetworkClient.h"
 #import "Crashlytics/Crashlytics/Controllers/FIRCLSReportUploader_Private.h"
 #import "Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionArbiter.h"
 #import "Crashlytics/Crashlytics/DataCollection/FIRCLSDataCollectionToken.h"
@@ -27,7 +26,6 @@
 #import "Crashlytics/Crashlytics/Models/FIRCLSSettings.h"
 #import "Crashlytics/Crashlytics/Models/FIRCLSSymbolResolver.h"
 #import "Crashlytics/Crashlytics/Models/Record/FIRCLSReportAdapter.h"
-#import "Crashlytics/Crashlytics/Operations/Reports/FIRCLSPackageReportOperation.h"
 #import "Crashlytics/Crashlytics/Operations/Reports/FIRCLSProcessReportOperation.h"
 
 #include "Crashlytics/Crashlytics/Helpers/FIRCLSUtility.h"
@@ -115,7 +113,6 @@
         packagedPath = [self.fileManager.preparedPath
             stringByAppendingPathComponent:report.path.lastPathComponent];
 
-
         NSLog(@"[Firebase/Crashlytics] Packaged report with id '%@' for submission",
               report.identifier);
 
@@ -189,7 +186,6 @@
   }
 
   return success;
-
 }
 
 - (BOOL)cleanUpSubmittedReportAtPath:(NSString *)path {
