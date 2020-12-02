@@ -102,8 +102,6 @@
           [processOperation start];
         }
 
-        NSString *packagedPath;
-
         // With the new report endpoint, the report is deleted once it is written to GDT
         // Check if the report has a crash file before the report is moved or deleted
         BOOL isCrash = report.isCrash;
@@ -117,7 +115,7 @@
           return;
         }
 
-        packagedPath = [self.fileManager.preparedPath
+        NSString *packagedPath = [self.fileManager.preparedPath
             stringByAppendingPathComponent:report.path.lastPathComponent];
 
         FIRCLSInfoLog(@"[Firebase/Crashlytics] Packaged report with id '%@' for submission",
