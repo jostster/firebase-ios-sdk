@@ -118,9 +118,8 @@
 }
 
 - (NSArray *)contentsOfPreparedPath {
-  return
-      [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.fileManager.preparedPath
-                                                          error:nil];
+  return [[NSFileManager defaultManager] contentsOfDirectoryAtPath:self.fileManager.preparedPath
+                                                             error:nil];
 }
 
 - (NSArray *)contentsOfProcessingPath {

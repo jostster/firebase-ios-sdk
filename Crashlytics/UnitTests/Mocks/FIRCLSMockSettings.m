@@ -16,5 +16,4 @@
 
 @implementation FIRCLSMockSettings
 
-
 @end

@@ -30,8 +30,7 @@
 
 NSString *const TestEndpoint = @"https://reports.crashlytics.com";
 
-@interface FIRCLSReportUploaderTests
-    : XCTestCase <FIRCLSReportUploaderDataSource>
+@interface FIRCLSReportUploaderTests : XCTestCase <FIRCLSReportUploaderDataSource>
 
 @property(nonatomic, strong) FIRCLSReportUploader *uploader;
 @property(nonatomic, strong) FIRCLSTempMockFileManager *fileManager;
@@ -85,7 +84,6 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
   XCTAssertTrue(
       [self.fileManager.moveItemAtPath_destDir containsString:self.fileManager.preparedPath]);
 }
-
 
 - (void)testUploadPackagedReportWithPath {
   [self runUploadPackagedReportWithUrgency:NO];

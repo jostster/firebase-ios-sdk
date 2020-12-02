@@ -16,5 +16,4 @@
 
 @interface FIRCLSMockSettings : FIRCLSSettings
 
-
 @end
