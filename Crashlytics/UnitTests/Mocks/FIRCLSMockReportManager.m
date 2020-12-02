@@ -52,7 +52,6 @@
 
   _uploader = [[FIRCLSMockReportUploader alloc] initWithQueue:self.operationQueue
                                                    dataSource:self
-                                                       client:self.networkClient
                                                   fileManager:fileManager
                                                     analytics:analytics];
 

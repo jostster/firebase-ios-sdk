@@ -525,7 +525,6 @@ static void (^reportSentCallback)(void);
   if (!_uploader) {
     _uploader = [[FIRCLSReportUploader alloc] initWithQueue:self.operationQueue
                                                  dataSource:self
-                                                     client:self.networkClient
                                                 fileManager:_fileManager
                                                   analytics:_analytics];
   }

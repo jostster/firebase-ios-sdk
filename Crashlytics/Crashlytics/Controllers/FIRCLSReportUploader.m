@@ -45,7 +45,6 @@
 
 - (instancetype)initWithQueue:(NSOperationQueue *)queue
                    dataSource:(id<FIRCLSReportUploaderDataSource>)dataSource
-                       client:(FIRCLSNetworkClient *)client
                   fileManager:(FIRCLSFileManager *)fileManager
                     analytics:(id<FIRAnalyticsInterop>)analytics {
   self = [super init];
@@ -55,7 +54,6 @@
 
   _operationQueue = queue;
   _dataSource = dataSource;
-  _networkClient = client;
   _fileManager = fileManager;
   _analytics = analytics;
 

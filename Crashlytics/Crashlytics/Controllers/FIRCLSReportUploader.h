@@ -18,7 +18,6 @@
 @class FIRCLSInternalReport;
 @class FIRCLSSettings;
 @class FIRCLSFileManager;
-@class FIRCLSNetworkClient;
 @class FIRCLSReportUploader;
 @class GDTCORTransport;
 
@@ -31,14 +30,12 @@
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)initWithQueue:(NSOperationQueue *)queue
                    dataSource:(id<FIRCLSReportUploaderDataSource>)dataSource
-                       client:(FIRCLSNetworkClient *)client
                   fileManager:(FIRCLSFileManager *)fileManager
                     analytics:(id<FIRAnalyticsInterop>)analytics NS_DESIGNATED_INITIALIZER;
 
 @property(nonatomic, weak) id<FIRCLSReportUploaderDataSource> dataSource;
 
 @property(nonatomic, readonly) NSOperationQueue *operationQueue;
-@property(nonatomic, readonly) FIRCLSNetworkClient *networkClient;
 @property(nonatomic, readonly) FIRCLSFileManager *fileManager;
 
 - (BOOL)prepareAndSubmitReport:(FIRCLSInternalReport *)report

@@ -28,12 +28,10 @@
 
 - (instancetype)initWithQueue:(NSOperationQueue *)queue
                    dataSource:(id<FIRCLSReportUploaderDataSource>)dataSource
-                       client:(FIRCLSNetworkClient *)client
                   fileManager:(FIRCLSFileManager *)fileManager
                     analytics:(id<FIRAnalyticsInterop>)analytics {
   self = [super initWithQueue:queue
                    dataSource:dataSource
-                       client:client
                   fileManager:fileManager
                     analytics:analytics];
   if (!self) {

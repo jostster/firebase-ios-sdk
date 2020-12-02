@@ -31,12 +31,11 @@
 NSString *const TestEndpoint = @"https://reports.crashlytics.com";
 
 @interface FIRCLSReportUploaderTests
-    : XCTestCase <FIRCLSReportUploaderDelegate, FIRCLSReportUploaderDataSource>
+    : XCTestCase <FIRCLSReportUploaderDataSource>
 
 @property(nonatomic, strong) FIRCLSReportUploader *uploader;
 @property(nonatomic, strong) FIRCLSTempMockFileManager *fileManager;
 @property(nonatomic, strong) NSOperationQueue *queue;
-@property(nonatomic, strong) FIRCLSMockNetworkClient *networkClient;
 
 // Add mock prefix to names as there are naming conflicts with FIRCLSReportUploaderDelegate
 @property(nonatomic, strong) FIRMockGDTCORTransport *mockDataTransport;
@@ -53,14 +52,10 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
   self.queue = [NSOperationQueue new];
   self.mockSettings = [[FIRCLSMockSettings alloc] initWithFileManager:self.fileManager
                                                            appIDModel:appIDModel];
-  self.networkClient = [[FIRCLSMockNetworkClient alloc] initWithQueue:self.queue
-                                                          fileManager:self.fileManager
-                                                             delegate:nil];
+
   self.fileManager = [[FIRCLSTempMockFileManager alloc] init];
   self.uploader = [[FIRCLSReportUploader alloc] initWithQueue:self.queue
-                                                     delegate:self
                                                    dataSource:self
-                                                       client:self.networkClient
                                                   fileManager:self.fileManager
                                                     analytics:nil];
   self.mockDataTransport = [[FIRMockGDTCORTransport alloc] initWithMappingID:@"1206"
@@ -76,20 +71,9 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
 
 #pragma mark - Tests
 
-- (void)testURLGeneration {
-  NSString *urlString =
-      [NSString stringWithFormat:@"%@/sdk-api/v1/platforms/%@/apps/%@/reports", TestEndpoint,
-                                 FIRCLSApplicationGetPlatform(), self.bundleIdentifier];
-  NSURL *url = [NSURL URLWithString:urlString];
-
-  XCTAssertEqualObjects([self.uploader reportURL], url);
-}
-
 - (void)testPrepareReport {
   NSString *path = [self.fileManager.activePath stringByAppendingPathComponent:@"pkg_uuid"];
   FIRCLSInternalReport *report = [[FIRCLSInternalReport alloc] initWithPath:path];
-  self.mockSettings.orgID = @"orgID";
-  self.mockSettings.shouldUseNewReportEndpoint = YES;
   self.fileManager.moveItemAtPathResult = [NSNumber numberWithInt:1];
 
   [self.uploader prepareAndSubmitReport:report
@@ -102,49 +86,13 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
       [self.fileManager.moveItemAtPath_destDir containsString:self.fileManager.preparedPath]);
 }
 
-- (void)testPrepareLegacyReport {
-  NSString *path = [self.fileManager.activePath stringByAppendingPathComponent:@"pkg_uuid"];
-  FIRCLSInternalReport *report = [[FIRCLSInternalReport alloc] initWithPath:path];
-  self.mockSettings.orgID = @"orgID";
-  self.mockSettings.shouldUseNewReportEndpoint = NO;
-  self.fileManager.moveItemAtPathResult = [NSNumber numberWithInt:1];
-
-  [self.uploader prepareAndSubmitReport:report
-                    dataCollectionToken:FIRCLSDataCollectionToken.validToken
-                               asUrgent:YES
-                         withProcessing:YES];
-
-  // Verify with the last move operation is from active -> processing for the legacy workflow
-  // FIRCLSPackageReportOperation will then move the report from processing -> prepared-legacy
-  XCTAssertTrue(
-      [self.fileManager.moveItemAtPath_destDir containsString:self.fileManager.processingPath]);
-}
 
 - (void)testUploadPackagedReportWithPath {
   [self runUploadPackagedReportWithUrgency:NO];
 }
 
-- (void)testUploadPackagedReportWithLegacyPath {
-  [self runUploadPackagedReportLegacyWithUrgency:NO];
-}
-
 - (void)testUrgentUploadPackagedReportWithPath {
   [self runUploadPackagedReportWithUrgency:YES];
-}
-
-- (void)testUrgentUploadPackagedReportWithLegacyPath {
-  [self runUploadPackagedReportLegacyWithUrgency:YES];
-}
-
-- (void)testUploadPackagedReportWithMismatchPathAndSettings {
-  [self setUpForLegacyUpload];
-
-  BOOL success = [self.uploader uploadPackagedReportAtPath:[self packagePath]
-                                       dataCollectionToken:FIRCLSDataCollectionToken.validToken
-                                                  asUrgent:NO];
-  XCTAssertFalse(success);
-  XCTAssertNil(self.mockDataTransport.sendDataEvent_event);
-  XCTAssertNil(self.networkClient.startUploadRequest);
 }
 
 - (void)testUploadPackagedReportWithoutDataCollectionToken {
@@ -155,7 +103,6 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
                                                   asUrgent:NO];
   XCTAssertFalse(success);
   XCTAssertNil(self.mockDataTransport.sendDataEvent_event);
-  XCTAssertNil(self.networkClient.startUploadRequest);
 }
 
 - (void)testUploadPackagedReportNotGDTWritten {
@@ -194,40 +141,11 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
                                                   asUrgent:urgent];
   XCTAssertTrue(success);
   XCTAssertNotNil(self.mockDataTransport.sendDataEvent_event);
-  XCTAssertNil(self.networkClient.startUploadRequest);
   XCTAssertEqualObjects(self.fileManager.removedItemAtPath_path, [self packagePath]);
 }
 
-- (void)runUploadPackagedReportLegacyWithUrgency:(BOOL)urgent {
-  NSString *packagePath =
-      [self.fileManager.legacyPreparedPath stringByAppendingPathComponent:@"pkg_uuid"];
-
-  [self setUpForLegacyUpload];
-
-  BOOL success = [self.uploader uploadPackagedReportAtPath:packagePath
-                                       dataCollectionToken:FIRCLSDataCollectionToken.validToken
-                                                  asUrgent:urgent];
-  XCTAssertTrue(success);
-  XCTAssertNil(self.mockDataTransport.sendDataEvent_event);
-  XCTAssertNotNil(self.networkClient.startUploadRequest);
-}
-
 - (void)setUpForUpload {
-  self.mockSettings.shouldUseNewReportEndpoint = YES;
   self.mockDataTransport.sendDataEvent_wasWritten = YES;
-}
-
-- (void)setUpForLegacyUpload {
-  self.mockSettings.shouldUseNewReportEndpoint = NO;
-  self.mockDataTransport.sendDataEvent_wasWritten = YES;
-  self.fileManager.fileSizeAtPathResult = [NSNumber numberWithInt:1];
-}
-
-#pragma mark - FIRCLSReportUploaderDelegate
-
-- (void)didCompletePackageSubmission:(NSString *)path
-                 dataCollectionToken:(FIRCLSDataCollectionToken *)token
-                               error:(NSError *)error {
 }
 
 #pragma mark - FIRCLSReportUploaderDataSource
