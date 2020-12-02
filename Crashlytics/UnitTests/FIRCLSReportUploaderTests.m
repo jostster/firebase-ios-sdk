@@ -24,7 +24,6 @@
 #include "Crashlytics/Crashlytics/Models/FIRCLSSettings.h"
 #include "Crashlytics/Shared/FIRCLSConstants.h"
 #import "Crashlytics/UnitTests/Mocks/FABMockApplicationIdentifierModel.h"
-#include "Crashlytics/UnitTests/Mocks/FIRCLSMockNetworkClient.h"
 #include "Crashlytics/UnitTests/Mocks/FIRCLSMockSettings.h"
 #include "Crashlytics/UnitTests/Mocks/FIRCLSTempMockFileManager.h"
 #include "Crashlytics/UnitTests/Mocks/FIRMockGDTCoreTransport.h"
@@ -54,7 +53,6 @@ NSString *const TestEndpoint = @"https://reports.crashlytics.com";
   self.queue = [NSOperationQueue new];
   self.mockSettings = [[FIRCLSMockSettings alloc] initWithFileManager:self.fileManager
                                                            appIDModel:appIDModel];
-  self.mockSettings.fetchedBundleID = self.bundleIdentifier;
   self.networkClient = [[FIRCLSMockNetworkClient alloc] initWithQueue:self.queue
                                                           fileManager:self.fileManager
                                                              delegate:nil];

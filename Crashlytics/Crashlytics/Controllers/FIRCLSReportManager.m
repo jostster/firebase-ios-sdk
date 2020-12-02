@@ -122,11 +122,8 @@ typedef NSNumber FIRCLSWrappedReportAction;
  */
 typedef NSNumber FIRCLSWrappedBool;
 
-@interface FIRCLSReportManager () <FIRCLSNetworkClientDelegate,
-                                   FIRCLSReportUploaderDelegate,
-                                   FIRCLSReportUploaderDataSource> {
+@interface FIRCLSReportManager () <FIRCLSReportUploaderDataSource> {
   FIRCLSFileManager *_fileManager;
-  FIRCLSNetworkClient *_networkClient;
   FIRCLSReportUploader *_uploader;
   dispatch_queue_t _dispatchQueue;
   NSOperationQueue *_operationQueue;
@@ -210,8 +207,6 @@ static void (^reportSentCallback)(void);
   _dispatchQueue = dispatch_queue_create("com.google.firebase.crashlytics.startup", 0);
   _operationQueue.underlyingQueue = _dispatchQueue;
 
-  _networkClient = [self clientWithOperationQueue:_operationQueue];
-
   _unsentReportsAvailable = [FBLPromise pendingPromise];
   _reportActionProvided = [FBLPromise pendingPromise];
   _unsentReportsHandled = [FBLPromise pendingPromise];
@@ -233,10 +228,6 @@ static void (^reportSentCallback)(void);
   return self;
 }
 
-- (FIRCLSNetworkClient *)clientWithOperationQueue:(NSOperationQueue *)queue {
-  return [[FIRCLSNetworkClient alloc] initWithQueue:queue fileManager:_fileManager delegate:self];
-}
-
 /**
  * Returns the number of unsent reports on the device, including the ones passed in.
  */
@@ -244,12 +235,7 @@ static void (^reportSentCallback)(void);
   int count = [self countSubmittableAndDeleteUnsubmittableReportPaths:paths];
 
   count += _fileManager.processingPathContents.count;
-
-  if (self.settings.shouldUseNewReportEndpoint) {
-    count += _fileManager.preparedPathContents.count;
-  } else {
-    count += _fileManager.legacyPreparedPathContents.count;
-  }
+  count += _fileManager.preparedPathContents.count;
   return count;
 }
 
@@ -538,7 +524,6 @@ static void (^reportSentCallback)(void);
 - (FIRCLSReportUploader *)uploader {
   if (!_uploader) {
     _uploader = [[FIRCLSReportUploader alloc] initWithQueue:self.operationQueue
-                                                   delegate:self
                                                  dataSource:self
                                                      client:self.networkClient
                                                 fileManager:_fileManager
@@ -660,13 +645,8 @@ static void (^reportSentCallback)(void);
 
 - (void)handleExistingFilesInPreparedWithToken:(FIRCLSDataCollectionToken *)token {
   NSArray *preparedPaths = self.fileManager.preparedPathContents;
-
-  // Give our network client a chance to reconnect here, if needed. This attempts to avoid
-  // trying to re-submit a prepared file that is already in flight.
-  [self.networkClient attemptToReconnectBackgroundSessionWithCompletionBlock:^{
-    [self.operationQueue addOperationWithBlock:^{
-      [self uploadPreexistingFiles:preparedPaths withToken:token];
-    }];
+  [self.operationQueue addOperationWithBlock:^{
+    [self uploadPreexistingFiles:preparedPaths withToken:token];
   }];
 }
 
@@ -682,14 +662,6 @@ static void (^reportSentCallback)(void);
 
     [[self uploader] uploadPackagedReportAtPath:path dataCollectionToken:token asUrgent:NO];
   }
-}
-
-- (void)retryUploadForReportAtPath:(NSString *)path
-               dataCollectionToken:(FIRCLSDataCollectionToken *)token {
-  FIRCLSAddOperationAfter(CLSReportRetryInterval, self.operationQueue, ^{
-    FIRCLSDeveloperLog("Crashlytics:Crash", @"re-attempting report submission");
-    [[self uploader] uploadPackagedReportAtPath:path dataCollectionToken:token asUrgent:NO];
-  });
 }
 
 #pragma mark - Launch Failure Detection
@@ -831,48 +803,6 @@ static void (^reportSentCallback)(void);
   FIRCLSUserLoggingRecordInternalKeyValue(FIRCLSUIOrientationKey, @(statusBarOrientation));
 }
 #endif
-
-#pragma mark - FIRCLSNetworkClientDelegate
-- (BOOL)networkClientCanUseBackgroundSessions:(FIRCLSNetworkClient *)client {
-  return !FIRCLSApplicationIsExtension();
-}
-
-- (void)networkClient:(FIRCLSNetworkClient *)client
-    didFinishUploadWithPath:(NSString *)path
-                      error:(NSError *)error {
-  // Route this through to the reports uploader.
-  // Since this callback happens after an upload finished, then we can assume that the original data
-  // collection was authorized. This isn't ideal, but it's better than trying to plumb the data
-  // collection token through all the system networking callbacks.
-  FIRCLSDataCollectionToken *token = [FIRCLSDataCollectionToken validToken];
-  [[self uploader] reportUploadAtPath:path dataCollectionToken:token completedWithError:error];
-}
-
-#pragma mark - FIRCLSReportUploaderDelegate
-
-- (void)didCompletePackageSubmission:(NSString *)path
-                 dataCollectionToken:(FIRCLSDataCollectionToken *)token
-                               error:(NSError *)error {
-  if (!error) {
-    FIRCLSDeveloperLog("Crashlytics:Crash", @"report submission successful");
-    return;
-  }
-
-  FIRCLSDeveloperLog("Crashlytics:Crash", @"report submission failed with error %@", error);
-  FIRCLSSDKLog("Error: failed to submit report '%s'\n", error.description.UTF8String);
-
-  [self retryUploadForReportAtPath:path dataCollectionToken:token];
-}
-
-- (void)didCompleteAllSubmissions {
-  [self.operationQueue addOperationWithBlock:^{
-    // Dealloc the reports uploader. If we need it again (if we re-enqueued submissions from
-    // didCompletePackageSubmission:, we can just create it again
-    self->_uploader = nil;
-
-    FIRCLSDeveloperLog("Crashlytics:Crash", @"report submission complete");
-  }];
-}
 
 #pragma mark - UITest Helpers
 

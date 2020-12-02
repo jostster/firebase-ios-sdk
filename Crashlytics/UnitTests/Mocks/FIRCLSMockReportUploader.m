@@ -27,13 +27,11 @@
 @implementation FIRCLSMockReportUploader
 
 - (instancetype)initWithQueue:(NSOperationQueue *)queue
-                     delegate:(id<FIRCLSReportUploaderDelegate>)delegate
                    dataSource:(id<FIRCLSReportUploaderDataSource>)dataSource
                        client:(FIRCLSNetworkClient *)client
                   fileManager:(FIRCLSFileManager *)fileManager
                     analytics:(id<FIRAnalyticsInterop>)analytics {
   self = [super initWithQueue:queue
-                     delegate:delegate
                    dataSource:dataSource
                        client:client
                   fileManager:fileManager

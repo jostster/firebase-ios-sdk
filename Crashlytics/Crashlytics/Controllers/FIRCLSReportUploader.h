@@ -22,7 +22,6 @@
 @class FIRCLSReportUploader;
 @class GDTCORTransport;
 
-@protocol FIRCLSReportUploaderDelegate;
 @protocol FIRCLSReportUploaderDataSource;
 @protocol FIRAnalyticsInterop;
 
@@ -31,13 +30,11 @@
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)initWithQueue:(NSOperationQueue *)queue
-                     delegate:(id<FIRCLSReportUploaderDelegate>)delegate
                    dataSource:(id<FIRCLSReportUploaderDataSource>)dataSource
                        client:(FIRCLSNetworkClient *)client
                   fileManager:(FIRCLSFileManager *)fileManager
                     analytics:(id<FIRAnalyticsInterop>)analytics NS_DESIGNATED_INITIALIZER;
 
-@property(nonatomic, weak) id<FIRCLSReportUploaderDelegate> delegate;
 @property(nonatomic, weak) id<FIRCLSReportUploaderDataSource> dataSource;
 
 @property(nonatomic, readonly) NSOperationQueue *operationQueue;
@@ -52,20 +49,6 @@
 - (BOOL)uploadPackagedReportAtPath:(NSString *)path
                dataCollectionToken:(FIRCLSDataCollectionToken *)dataCollectionToken
                           asUrgent:(BOOL)urgent;
-
-- (void)reportUploadAtPath:(NSString *)path
-       dataCollectionToken:(FIRCLSDataCollectionToken *)dataCollectionToken
-        completedWithError:(NSError *)error;
-
-@end
-
-@protocol FIRCLSReportUploaderDelegate <NSObject>
-@required
-
-- (void)didCompletePackageSubmission:(NSString *)path
-                 dataCollectionToken:(FIRCLSDataCollectionToken *)token
-                               error:(NSError *)error;
-- (void)didCompleteAllSubmissions;
 
 @end
 

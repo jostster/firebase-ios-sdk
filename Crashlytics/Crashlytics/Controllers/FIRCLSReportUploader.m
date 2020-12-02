@@ -44,7 +44,6 @@
 @implementation FIRCLSReportUploader
 
 - (instancetype)initWithQueue:(NSOperationQueue *)queue
-                     delegate:(id<FIRCLSReportUploaderDelegate>)delegate
                    dataSource:(id<FIRCLSReportUploaderDataSource>)dataSource
                        client:(FIRCLSNetworkClient *)client
                   fileManager:(FIRCLSFileManager *)fileManager
@@ -55,7 +54,6 @@
   }
 
   _operationQueue = queue;
-  _delegate = delegate;
   _dataSource = dataSource;
   _networkClient = client;
   _fileManager = fileManager;
@@ -195,20 +193,6 @@
   }
 
   return YES;
-}
-
-- (void)reportUploadAtPath:(NSString *)path
-       dataCollectionToken:(FIRCLSDataCollectionToken *)dataCollectionToken
-        completedWithError:(NSError *)error {
-  FIRCLSDeveloperLog("Crashlytics:Crash:Reports", @"completed submission of %@", path);
-
-  if (!error) {
-    [self cleanUpSubmittedReportAtPath:path];
-  }
-
-  [[self delegate] didCompletePackageSubmission:path
-                            dataCollectionToken:dataCollectionToken
-                                          error:error];
 }
 
 @end
