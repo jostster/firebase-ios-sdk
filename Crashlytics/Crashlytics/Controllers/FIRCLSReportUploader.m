@@ -73,7 +73,6 @@
            dataCollectionToken:(FIRCLSDataCollectionToken *)dataCollectionToken
                       asUrgent:(BOOL)urgent
                 withProcessing:(BOOL)shouldProcess {
-
   if (![dataCollectionToken isValid]) {
     FIRCLSErrorLog(@"Data collection disabled and report will not be submitted");
     return;
@@ -83,7 +82,6 @@
   // symbolication operation may be computationally intensive.
   FIRCLSApplicationActivity(
       FIRCLSApplicationActivityDefault, @"Crashlytics Crash Report Processing", ^{
-
         // Run on-device symbolication before packaging if we should process
         if (shouldProcess) {
           if (![self.fileManager moveItemAtPath:report.path
@@ -123,7 +121,7 @@
             stringByAppendingPathComponent:report.path.lastPathComponent];
 
         FIRCLSInfoLog(@"[Firebase/Crashlytics] Packaged report with id '%@' for submission",
-              report.identifier);
+                      report.identifier);
 
         [self uploadPackagedReportAtPath:packagedPath
                      dataCollectionToken:dataCollectionToken
@@ -178,7 +176,8 @@
       sendDataEvent:event
          onComplete:^(BOOL wasWritten, NSError *error) {
            if (!wasWritten) {
-             FIRCLSErrorLog(@"Failed to send crash report due to failure writing GoogleDataTransport event");
+             FIRCLSErrorLog(
+                 @"Failed to send crash report due to failure writing GoogleDataTransport event");
              return;
            }
 
