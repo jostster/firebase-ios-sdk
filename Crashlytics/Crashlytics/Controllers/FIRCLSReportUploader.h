@@ -38,12 +38,12 @@
 @property(nonatomic, readonly) NSOperationQueue *operationQueue;
 @property(nonatomic, readonly) FIRCLSFileManager *fileManager;
 
-- (BOOL)prepareAndSubmitReport:(FIRCLSInternalReport *)report
+- (void)prepareAndSubmitReport:(FIRCLSInternalReport *)report
            dataCollectionToken:(FIRCLSDataCollectionToken *)dataCollectionToken
                       asUrgent:(BOOL)urgent
                 withProcessing:(BOOL)shouldProcess;
 
-- (BOOL)uploadPackagedReportAtPath:(NSString *)path
+- (void)uploadPackagedReportAtPath:(NSString *)path
                dataCollectionToken:(FIRCLSDataCollectionToken *)dataCollectionToken
                           asUrgent:(BOOL)urgent;
 
