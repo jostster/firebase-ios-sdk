@@ -267,6 +267,9 @@ to Build Settings.
 * FirebaseFirestore requires signing the
 [gRPC Resource target](https://github.com/firebase/firebase-ios-sdk/issues/3500#issuecomment-518741681).
 
+#### Additional Crashlytics Notes
+* watchOS has limited support. Due to watchOS restrictions, mach exceptions and signal crashes are not recorded. (Crashes in SwiftUI are generated as mach exceptions, so will not be recorded)
+
 ## Roadmap
 
 See [Roadmap](ROADMAP.md) for more about the Firebase iOS SDK Open Source
